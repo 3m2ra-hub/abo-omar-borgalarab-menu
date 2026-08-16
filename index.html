@@ -39,6 +39,7 @@ footer{text-align:center;padding:28px;color:#806f62;font-size:13px}
 @media(max-width:600px){.contact-bar{gap:7px;font-size:11px}.contact-bar a{padding:5px 9px}}
 
 .menu-word{display:inline-block;margin-top:2px;font-size:14px;font-weight:700;letter-spacing:1.5px;color:#f4dca6;text-transform:uppercase}
+.admin-open{margin-top:12px;border:1px solid #ffffff66;background:#ffffff18;color:#fff;border-radius:22px;padding:8px 16px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer}.admin-open:hover{background:#fff2}@media(max-width:600px){.admin-open{display:inline-block;font-size:12px;padding:7px 13px}}
 </style>
 </head>
 <body>
@@ -46,6 +47,7 @@ footer{text-align:center;padding:28px;color:#806f62;font-size:13px}
   <img id="logo" class="logo" src="logo.jpg" alt="شعار حلواني أبو عمر">
   <h1 id="brand">حلواني أبو عمر</h1>
   <div class="sub">Borg Al Arab<br><span class="menu-word">Menu</span></div>
+  <button id="adminBtn" class="admin-open" onclick="openAdmin()">⚙️ إدارة المنيو</button>
 </header>
 
 <main class="wrap">
@@ -129,6 +131,14 @@ function exportData(){let blob=new Blob([JSON.stringify(items,null,2)],{type:"ap
 function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{items=JSON.parse(r.result);save();render();alert("تم الاستيراد")}catch{alert("ملف غير صالح")}};r.readAsText(f)}
 function resetData(){if(confirm("إرجاع البيانات التجريبية؟")){items=demo;save();render()}}
 document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==="a"){let p=prompt("كلمة مرور التعديل");if(p==="2307"){document.getElementById("admin").style.display="block";alert("تم فتح لوحة التعديل")}else alert("كلمة المرور غير صحيحة")}})
+function openAdmin(){
+  let p=prompt("اكتب كلمة مرور إدارة المنيو");
+  if(p==="2307"){
+    document.getElementById("admin").style.display="block";
+    document.getElementById("adminBtn").textContent="⚙️ لوحة التعديل مفتوحة";
+    document.getElementById("admin").scrollIntoView({behavior:"smooth",block:"start"});
+  }else if(p!==null) alert("كلمة المرور غير صحيحة");
+}
 render();
 </script>
 </body>
