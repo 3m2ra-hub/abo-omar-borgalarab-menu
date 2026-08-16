@@ -39,7 +39,8 @@ footer{text-align:center;padding:28px;color:#806f62;font-size:13px}
 @media(max-width:600px){.contact-bar{gap:7px;font-size:11px}.contact-bar a{padding:5px 9px}}
 
 .menu-word{display:inline-block;margin-top:2px;font-size:14px;font-weight:700;letter-spacing:1.5px;color:#f4dca6;text-transform:uppercase}
-.admin-open{margin-top:12px;border:1px solid #ffffff66;background:#ffffff18;color:#fff;border-radius:22px;padding:8px 16px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer}.admin-open:hover{background:#fff2}@media(max-width:600px){.admin-open{display:inline-block;font-size:12px;padding:7px 13px}}
+.admin-open{position:absolute;top:8px;left:8px;width:32px;height:32px;padding:0;border:1px solid #ffffff33;background:#ffffff10;color:#fff8;border-radius:50%;font-size:15px;opacity:.38;cursor:pointer;z-index:30}.admin-open:hover,.admin-open:focus{opacity:.8;background:#ffffff20}@media(max-width:600px){.admin-open{width:30px;height:30px;font-size:14px}}
+.file-pick{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid #eadfce;background:#fffaf2;border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer}.file-pick:hover{background:#f8f0e2}
 </style>
 </head>
 <body>
@@ -47,7 +48,7 @@ footer{text-align:center;padding:28px;color:#806f62;font-size:13px}
   <img id="logo" class="logo" src="logo.jpg" alt="شعار حلواني أبو عمر">
   <h1 id="brand">حلواني أبو عمر</h1>
   <div class="sub">Borg Al Arab<br><span class="menu-word">Menu</span></div>
-  <button id="adminBtn" class="admin-open" onclick="openAdmin()">⚙️ إدارة المنيو</button>
+  <button id="adminBtn" class="admin-open" onclick="openAdmin()" title="إدارة المنيو" aria-label="إدارة المنيو">⚙️</button>
 </header>
 
 <main class="wrap">
@@ -62,7 +63,7 @@ footer{text-align:center;padding:28px;color:#806f62;font-size:13px}
       <input id="aName" placeholder="اسم الصنف">
       <input id="aPrice" placeholder="السعر">
       <input id="aCat" placeholder="القسم">
-      <input id="aImg" placeholder="رابط صورة (اختياري)">
+      <label class="file-pick">🖼️ اختيار صورة من الجهاز<input id="aImgFile" type="file" accept="image/*" hidden onchange="loadProductImage(event)"></label><div id="imgStatus" class="small">لم يتم اختيار صورة</div>
       <textarea id="aDesc" placeholder="وصف مختصر (اختياري)"></textarea>
       <input id="aIndex" type="number" min="0" placeholder="رقم المنتج للتعديل (اتركه فارغًا للإضافة)">
     </div>
@@ -117,15 +118,16 @@ function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&l
 function save(){localStorage.setItem("aboOmarMenu",JSON.stringify(items))}
 function saveItem(){
  let name=aName.value.trim();if(!name)return alert("اكتب اسم الصنف");
- let obj={name,price:aPrice.value.trim()||"حسب الاختيار",cat:aCat.value.trim()||"أصناف أخرى",desc:aDesc.value.trim(),img:aImg.value.trim()};
+ let obj={name,price:aPrice.value.trim()||"حسب الاختيار",cat:aCat.value.trim()||"أصناف أخرى",desc:aDesc.value.trim(),img:window.pendingProductImage||""};
  let idx=aIndex.value.trim();
  if(idx==="") items.push(obj); else if(items[+idx]) items[+idx]=obj; else return alert("رقم المنتج غير صحيح");
- save();[aName,aPrice,aCat,aDesc,aImg,aIndex].forEach(x=>x.value="");render();alert("تم الحفظ");
+ save();[aName,aPrice,aCat,aDesc,aIndex].forEach(x=>x.value="");document.getElementById("aImgFile").value="";window.pendingProductImage="";document.getElementById("imgStatus").textContent="لم يتم اختيار صورة";render();alert("تم الحفظ");
 }
 function renderAdmin(){
  const box=document.getElementById("adminList");box.innerHTML=items.map((x,i)=>`<div style="padding:9px 0;border-bottom:1px solid #eee"><b>${i} - ${esc(x.name)}</b> — ${esc(x.price)} <button class="btn gold" onclick="editItem(${i})">تعديل</button> <button class="btn danger" onclick="delItem(${i})">حذف</button></div>`).join("");
 }
-function editItem(i){let x=items[i];aName.value=x.name;aPrice.value=x.price;aCat.value=x.cat;aDesc.value=x.desc;aImg.value=x.img;aIndex.value=i;window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"})}
+function editItem(i){let x=items[i];aName.value=x.name;aPrice.value=x.price;aCat.value=x.cat;aDesc.value=x.desc;aIndex.value=i;window.pendingProductImage=x.img||"";document.getElementById("imgStatus").textContent=x.img?"الصورة الحالية محفوظة — اختر صورة جديدة لاستبدالها":"لم يتم اختيار صورة";window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"})}
+function loadProductImage(event){const f=event.target.files[0];if(!f)return;if(!f.type.startsWith("image/"))return alert("اختار صورة فقط");const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const max=900;let w=im.width,h=im.height;if(w>max||h>max){const s=Math.min(max/w,max/h);w=Math.round(w*s);h=Math.round(h*s)}const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);window.pendingProductImage=c.toDataURL("image/jpeg",.82);document.getElementById("imgStatus").textContent="تم اختيار الصورة: "+f.name};im.src=r.result};r.readAsDataURL(f)}
 function delItem(i){if(confirm("حذف الصنف؟")){items.splice(i,1);save();render()}}
 function exportData(){let blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="abo-omar-menu.json";a.click()}
 function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{items=JSON.parse(r.result);save();render();alert("تم الاستيراد")}catch{alert("ملف غير صالح")}};r.readAsText(f)}
